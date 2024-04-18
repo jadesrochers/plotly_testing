@@ -1,4 +1,12 @@
-d3.csv('https://raw.githubusercontent.com/plotly/datasets/master/2010_alcohol_consumption_by_country.csv', plotCsvData)
+const urlGeojsonCounties = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+
+async function fetchUrl(url){
+    let response = await fetch(url)
+    let data = await response.json()
+    return data
+}
+
+let countyData = fetchUrl(urlGeojsonCounties)
 
 function unpackData(rows, key) {
     return rows.map(function(row) { return row[key]; });
@@ -35,30 +43,4 @@ function plotCsvData(err, rows) {
 }
 
 
-
-      // function unpack(rows, key) {
-      //     return rows.map(function(row) { return row[key]; });
-      // }
-
-    // let data = [{
-      //   type: 'choropleth',
-      //   locationmode: 'country names',
-      //   locations: unpack(rows, 'location'),
-      //   z: unpack(rows, 'alcohol'),
-      //   text: unpack(rows, 'location'),
-      //   autocolorscale: true
-    // }];
-
-    // let layout = {
-      // title: 'Pure alcohol consumption<br>among adults (age 15+) in 2010',
-      // geo: {
-      //     projection: {
-      //         type: 'robinson'
-      //     }
-      // }
-    // };
-
-    // Plotly.newPlot("plotTarget", data, layout, {showLink: false});
-
-// });
 

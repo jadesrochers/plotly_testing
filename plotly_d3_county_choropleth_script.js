@@ -6,7 +6,7 @@ async function fetchUrl(url){
     return data
 }
 
-let countyData = fetchUrl(urlGeojsonCounties)
+let blah = d3.csv('time_series_covid19_confirmed_US.csv').data()
 
 function unpackData(rows, key) {
     return rows.map(function(row) { return row[key]; });
@@ -36,7 +36,8 @@ function setupLayout() {
     return layout
 }
 
-function plotCsvData(err, rows) {
+async function plotCsvData(err, rows) {
+    let countyData = await fetchUrl(urlGeojsonCounties)
     let data = extractData(rows);
     let layout = setupLayout()
     Plotly.newPlot("plotTarget", data, layout, {showLink: false});

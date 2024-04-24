@@ -124,6 +124,7 @@ function setupLayout() {
 
 // async function plotCsvData(err, rows) {
 async function plotCsvData(err, rows) {
+    debugger;
     let countyData = await fetchUrl(urlGeojsonCounties)
     let stateData = await fetchUrl(urlGeojsonStates)
     let data = extractData(rows, countyData, stateData);

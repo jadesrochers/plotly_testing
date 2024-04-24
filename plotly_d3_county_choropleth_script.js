@@ -1,13 +1,13 @@
 const urlGeojsonCounties = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
 const urlGeojsonStates = './geojson_us_states_5m.json'
 
+
 async function fetchUrl(url){
     let response = await fetch(url)
     let data = await response.json()
     return data
 }
 
-d3.csv('./bimonthly_covid19_confirmed_US.csv', plotCsvData)
 
 function unpackData(rows, key) {
     return rows.map(function(row)
@@ -94,6 +94,7 @@ function extractData(rows, countyGeojson, stateGeojson) {
     return traces
 }
 
+
 function setupLayout() {
     let layout = {
       title: 'Covid19 Confirmed cases, 4/1/20',
@@ -122,14 +123,17 @@ function setupLayout() {
     return layout
 }
 
+
 // async function plotCsvData(err, rows) {
-async function plotCsvData(err, rows) {
-    debugger;
+async function plotCsvData() {
+    let covidData = await d3.csv('./bimonthly_covid19_confirmed_US.csv')
     let countyData = await fetchUrl(urlGeojsonCounties)
     let stateData = await fetchUrl(urlGeojsonStates)
-    let data = extractData(rows, countyData, stateData);
+    let data = extractData(covidData, countyData, stateData);
     let layout = setupLayout()
     let blah = await Plotly.newPlot("plotTarget", data, layout);
     console.log('doneish')
 }
 
+
+plotCsvData()

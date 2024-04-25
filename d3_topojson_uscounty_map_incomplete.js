@@ -5,8 +5,12 @@
 // It was wrapped in a chart = {} object, but I am near certain that 
 // tells Observable what to plot, so I would likely instead select
 // an element in my html and add that instead.
+
+
+const { select, json, geoPath, geoNaturalEarth1 } = d3;
 const urlGeojsonCounties = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
 const urlGeojsonStates = './geojson_us_states_5m.json'
+const urlTopojsonStates = './topojson_us_states_5m.json'
 // d3.csv('./bimonthly_covid19_confirmed_US.csv', plotCsvData)
 
 async function fetchUrl(url){
@@ -71,21 +75,23 @@ function configureSvg(svgElement) {
 }
 
 function topLevelElement(svgElement) {
-    svg.append("g")
+    svgElement.append("g")
         .attr("transform", "translate(610,20)")
-        .append(() => Legend(color, {title: "Unemployment rate (%)", width: 260}));
+        // .append(() => Legend(color, {title: "Covid Confirmed Infections", width: 260}));
+    return svgElement
 }
 
 function appendUsStates(svgElement, stateMesh) {
-    svg.append("path")
+    svgElement.append("path")
         .datum(stateMesh)
         .attr("fill", "none")
         .attr("stroke", "white")
         .attr("stroke-linejoin", "round")
         .attr("d", path);
+    return svgElement
 }
 
-function appendUsCounties(svgElement, countyFeature) {
+function appendUsCounties(svgElement, countyFeature, statemap, valuemap) {
     svgElement.append("g")
         .selectAll("path")
         .data(countyFeature.features)
@@ -93,22 +99,31 @@ function appendUsCounties(svgElement, countyFeature) {
         .attr("fill", d => color(valuemap.get(d.id)))
         .attr("d", path)
         .append("title")
-        .text(d => `${d.properties.name}, ${statemap.get(d.id.slice(0, 2)).properties.name}\n${valuemap.get(d.id)}%`);
+        .text(d => `${d.name}, ${statemap.get(d.id.slice(0, 2)).name}\n${valuemap.get(d.id)}%`);
+    return svgElement
 }
 
 async function plotCsvData() {
     console.log('Attempting to get csv data')
     let covidData = await d3.csv('./bimonthly_covid19_confirmed_US.csv')
+    const valuemap = new Map(covidData.map(d => [d.GEO_ID, d['10/1/21']]));
     console.log(covidData)
+    // I creates the us-states topojson using this cli command: 
+    // geo2topo us-states=geojson_us_states_5m.json > topojson_us_states_5m.json
+    // Get it on system with: npm install -g topojson-server
+    let countyGeojson = await fetchUrl(urlGeojsonCounties)
+    let stateGeojson = await fetchUrl(urlGeojsonStates)
+    let stateTopojson = await fetchUrl(urlTopojsonStates)
+    // const counties = topojson.feature(countyData, countyData);
+    // const states = topojson.feature(stateData, stateData);
+    debugger;
+    const statemap = new Map(stateGeojson.features.map(d => [d.id, d.properties]));
+    const statemesh = topojson.mesh(stateTopojson, stateTopojson.objects.usStates, (a, b) => a !== b);
     let svg = d3.select("svg.usaCountyMap")
-    let countyData = await fetchUrl(urlGeojsonCounties)
-    let stateData = await fetchUrl(urlGeojsonStates)
-    const counties = topojson.feature(countyData, countyData);
-    const states = topojson.feature(stateData, stateData);
-    const statemesh = topojson.mesh(stateData, stateData, (a, b) => a !== b);
     svg = configureSvg(svg)
     svg = topLevelElement(svg)
-
+    svg = appendUsStates(svg, statemesh)
+    svg = appendUsCounties(svg, countyGeojson, statemap, valuemap)
     // let data = extractData(rows, countyData, stateData);
     // let layout = setupLayout()
     // let blah = await Plotly.newPlot("plotTarget", data, layout);

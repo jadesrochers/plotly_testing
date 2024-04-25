@@ -19,7 +19,14 @@ async function fetchUrl(url){
     return data
 }
 
-const color = d3.scaleQuantize([1, 10], d3.schemeBlues[9]);
+let val = 0.05
+let vals = []
+while (val <=1) {
+    vals.push(val.toPrecision(2))
+    val += 0.05
+}
+let turbos = vals.map(d3.interpolateTurbo)
+const color = d3.scaleQuantize([1, 500000], turbos);
 const path = d3.geoPath();
 const format = d => `${d}%`;
 // const valuemap = new Map(data.map(d => [d.id, d.rate]));
@@ -77,53 +84,60 @@ function configureSvg(svgElement) {
 function topLevelElement(svgElement) {
     svgElement.append("g")
         .attr("transform", "translate(610,20)")
+        .attr("width", 960)
+        .attr("height", 600)
         // .append(() => Legend(color, {title: "Covid Confirmed Infections", width: 260}));
     return svgElement
 }
 
-function appendUsStates(svgElement, stateMesh) {
+function appendUsStates(svgElement, stateMesh, geoGenerator) {
     svgElement.append("path")
         .datum(stateMesh)
         .attr("fill", "none")
         .attr("stroke", "white")
         .attr("stroke-linejoin", "round")
-        .attr("d", path);
+        .attr("d", geoGenerator);
     return svgElement
 }
 
-function appendUsCounties(svgElement, countyFeature, statemap, valuemap) {
+function appendUsCounties(svgElement, countyFeature, statemap, valuemap, geoGenerator) {
     svgElement.append("g")
         .selectAll("path")
         .data(countyFeature.features)
         .join("path")
         .attr("fill", d => color(valuemap.get(d.id)))
-        .attr("d", path)
+        .attr("d", geoGenerator)
         .append("title")
-        .text(d => `${d.name}, ${statemap.get(d.id.slice(0, 2)).name}\n${valuemap.get(d.id)}%`);
+        .text(d => `${d.properties.NAME}, ${statemap.get(d.properties.STATE).NAME}\n${valuemap.get(d.id)} Cases`);
     return svgElement
 }
 
 async function plotCsvData() {
-    console.log('Attempting to get csv data')
     let covidData = await d3.csv('./bimonthly_covid19_confirmed_US.csv')
-    const valuemap = new Map(covidData.map(d => [d.GEO_ID, d['10/1/21']]));
-    console.log(covidData)
+    const valuemap = new Map(covidData.map(d => [d.GEO_ID, Number(d['10/1/21'])]));
     // I creates the us-states topojson using this cli command: 
     // geo2topo us-states=geojson_us_states_5m.json > topojson_us_states_5m.json
     // Get it on system with: npm install -g topojson-server
     let countyGeojson = await fetchUrl(urlGeojsonCounties)
     let stateGeojson = await fetchUrl(urlGeojsonStates)
     let stateTopojson = await fetchUrl(urlTopojsonStates)
+
+    let projection = d3.geoAlbersUsa();
+    let geoGenerator = d3.geoPath().projection(projection);
+    // Get individual coordinate conversion to see if things line up
+    let coord = projection(stateGeojson.features[36].geometry.coordinates[0][0][0])
+    // Get the feature path from the feature
+    // let pathy = generator(stateGeojson.features[36])
+
     // const counties = topojson.feature(countyData, countyData);
     // const states = topojson.feature(stateData, stateData);
-    debugger;
     const statemap = new Map(stateGeojson.features.map(d => [d.id, d.properties]));
     const statemesh = topojson.mesh(stateTopojson, stateTopojson.objects.usStates, (a, b) => a !== b);
     let svg = d3.select("svg.usaCountyMap")
     svg = configureSvg(svg)
-    svg = topLevelElement(svg)
-    svg = appendUsStates(svg, statemesh)
-    svg = appendUsCounties(svg, countyGeojson, statemap, valuemap)
+    // svg = topLevelElement(svg)
+    svg = appendUsStates(svg, statemesh, geoGenerator)
+    svg = appendUsCounties(svg, countyGeojson, statemap, valuemap, geoGenerator)
     // let data = extractData(rows, countyData, stateData);
     // let layout = setupLayout()
     // let blah = await Plotly.newPlot("plotTarget", data, layout);

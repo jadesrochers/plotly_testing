@@ -1,0 +1,31 @@
+body {
+  margin: 0px;
+  overflow: hidden;
+  font-family: 'Roboto Slab', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 1000;
+  display: block;
+  margin: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 400;
+  word-wrap: break-word;
+  background-color: #E9F2F4;
+  border: solid;
+  border-width: 2px;
+  border-radius: 5px;
+  padding: 3px;
+  position: absolute;
+  line-height: 0.9rem;
+  text-align: center;
+}
+
+.tooltipOff {
+  opacity: 0;
+}
+
+.tooltipOn {
+  opacity: 0.5;
+}

@@ -1,6 +1,7 @@
 body {
   margin: 0px;
   overflow: hidden;
+  font-family: 'Roboto Slab', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .sphere {

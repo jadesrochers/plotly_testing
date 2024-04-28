@@ -1,48 +1,55 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Let's make a map with D3.js!</title>
+    <title>Choropleth with Interactivity USA</title>
     <link rel="stylesheet" href="d3_topojson_us_county_map.css">
     <script src="https://unpkg.com/d3@7.8.0/dist/d3.min.js"></script>
     <script src="https://unpkg.com/topojson@3.0.2/dist/topojson.min.js"></script>
-    <script src="d3_topojson_uscounty_map_incomplete.js"></script>
+    <script type="module">
+      import { plotCsvData, dateFormChange } from "./d3_topojson_uscounty_map_covid.js";
+      plotCsvData()
+      // If you want the html to see it, need this part.
+      window.dateFormChange = dateFormChange
+    </script>
   </head>
   <body>
-    <div id=mapContainer >
-      <svg class="usaCountyMap" width="960" height="600"></svg>
-    </div>
-    <div id=formContainer >
-      <form>
-        <label for="covidYear">Year:</label>
-        <select name="year" id="covidYear" onchange="dateFormChange()">
-          <option value="2020">2020</option>
-          <option value="2021">2021</option>
-          <option value="2022">2022</option>
-          <option value="2023">2023</option>
-        </select><br>
+    <div class="mainContainer">
+      <div class="formContainer" >
+        <form class="yearMonthDay">
+          <div class="selectLabel"> <p class="selectText">Year:</p> </div>
+          <select class="selectors" name="year" id="covidYear" onchange="dateFormChange()">
+            <option value="2020" selected>2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+          </select>
 
 
-        <label for="covidMonth">Month:</label>
-        <select name="month" id="covidMonth" onchange="dateFormChange()">
-          <option value="3">April</option>
-          <option value="4">May</option>
-          <option value="5">June</option>
-          <option value="6">July</option>
-          <option value="7">August</option>
-          <option value="8">September</option>
-          <option value="9">October</option>
-          <option value="10">November</option>
-          <option value="11">December</option>
-        </select><br>
+          <div class="selectLabel" for="covidMonth"> <p class="selectText">Month:</p> </div>
+          <select class="selectors" name="month" id="covidMonth" onchange="dateFormChange()">
+            <option value="3" selected>April</option>
+            <option value="4">May</option>
+            <option value="5">June</option>
+            <option value="6">July</option>
+            <option value="7">August</option>
+            <option value="8">September</option>
+            <option value="9">October</option>
+            <option value="10">November</option>
+            <option value="11">December</option>
+          </select>
 
 
-        <label for="covidDay">Day:</label>
-        <select name="day" id="covidDay"  onchange="dateFormChange()">
-          <option value="1">1</option>
-          <option value="15">15</option>
-        </select><br>
+          <div class="selectLabel" for="covidDay"> <p class="selectText">Day:</p> </div>
+          <select class="selectors" name="day" id="covidDay"  onchange="dateFormChange()">
+            <option value="1" selected>1</option>
+            <option value="15">15</option>
+          </select>
 
-      </form>
+        </form>
+      </div>
+      <div class="mapContainer" >
+        <svg class="usaCountyMap" width="960" height="600"></svg>
+      </div>
     </div>
   </body>
 </html>

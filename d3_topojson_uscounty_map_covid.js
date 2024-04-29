@@ -9,7 +9,7 @@
 
 const { select, json, geoPath, geoNaturalEarth1 } = d3;
 const urlGeojsonCounties = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
-const urlGeojsonStates = './geojson_us_states_5m.json'
+// const urlGeojsonStates = './geojson_us_states_5m.json'
 const urlTopojsonStates = './topojson_us_states_5m.json'
 // d3.csv('./bimonthly_covid19_confirmed_US.csv', plotCsvData)
 
@@ -162,7 +162,11 @@ async function plotCsvData() {
     // geo2topo us-states=geojson_us_states_5m.json > topojson_us_states_5m.json
     // Get it on system with: npm install -g topojson-server
     const countyGeojson = await fetchUrl(urlGeojsonCounties)
-    const stateGeojson = await fetchUrl(urlGeojsonStates)
+    // const stateGeojson = await fetchUrl(urlGeojsonStates)
+    // It works just fine as a plain JS object, no parsing
+    // needed. Then for html, I suppose it would be inlined?
+    const stateGeojson = stateGeojsonRaw
+    debugger;
     const stateTopojson = await fetchUrl(urlTopojsonStates)
 
     const projection = d3.geoAlbersUsa();

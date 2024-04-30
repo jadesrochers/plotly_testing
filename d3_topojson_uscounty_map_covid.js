@@ -1,16 +1,13 @@
-//// This was supposed to be a d3 sample of creating a US county map. 
-// The environment it is supposed to run in is the observablehq
-// plotting environment, so I need to work out how to port this 
-// to a plain html/js/css setup and see what that can do.
-// It was wrapped in a chart = {} object, but I am near certain that 
-// tells Observable what to plot, so I would likely instead select
-// an element in my html and add that instead.
-
+// The '.js' is needed or it chokes on the content.
+import { stateGeojsonRaw } from "./us_state_5m_geojson.js"
+import { countyGeojsonRaw } from "./us_county_geojson_fips.js"
+import { bimonthlyCovidCsv } from "./bimonthly_covid19_confirmed_str.js"
+import { topojsonUsStates5m } from "./topojson_us_states_5m_str.js"
 
 const { select, json, geoPath, geoNaturalEarth1 } = d3;
 const urlGeojsonCounties = 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
 // const urlGeojsonStates = './geojson_us_states_5m.json'
-const urlTopojsonStates = './topojson_us_states_5m.json'
+// const urlTopojsonStates = './topojson_us_states_5m_str.json'
 // d3.csv('./bimonthly_covid19_confirmed_US.csv', plotCsvData)
 
 async function fetchUrl(url){
@@ -40,7 +37,6 @@ let reColor;
 // mask intricate features such as islands and inlets. (Try removing
 // the last argument to topojson.mesh below to see the effect.)
 // const statemesh = topojson.mesh(us, us.objects.states, (a, b) => a !== b);
-
 
 const createTooltip = function() {
     let Tooltip = d3.select("div.mapContainer")
@@ -152,23 +148,39 @@ function dateFormChange() {
     reColor(formattedDate)
 }
 
+// Plain js way to set the onchange function for an element.
+// addEventListener() is another way, seems to actually add one.
+function addSelectOnChange() {
+    document.querySelectorAll("select.selectors").forEach(select => select.onchange = dateFormChange)
+}
+
 async function plotCsvData() {
     // Get the initial default selected date and use it to 
     // populate the map
-    let selectedDate = getSelectedDate()
-    let covidData = await d3.csv('./bimonthly_covid19_confirmed_US.csv')
+    const selectedDate = getSelectedDate()
+
+    // Get the data from a file
+    // let covidData = await d3.csv('./bimonthly_covid19_confirmed_US.csv')
+    // pull it from JS string so that I can static build
+    const covidData = d3.csvParse(bimonthlyCovidCsv)
+
     const valueMap = new Map(covidData.map(d => [d.GEO_ID, Number(d[selectedDate])]));
+
     // I created the us-states topojson using this cli command: 
     // geo2topo us-states=geojson_us_states_5m.json > topojson_us_states_5m.json
     // Get it on system with: npm install -g topojson-server
-    const countyGeojson = await fetchUrl(urlGeojsonCounties)
-    // const stateGeojson = await fetchUrl(urlGeojsonStates)
-    // It works just fine as a plain JS object, no parsing
-    // needed. Then for html, I suppose it would be inlined?
-    const stateGeojson = stateGeojsonRaw
-    debugger;
-    const stateTopojson = await fetchUrl(urlTopojsonStates)
 
+    // Getting the data from a url
+    // const stateGeojson = await fetchUrl(urlGeojsonStates)
+    // const stateTopojson = await fetchUrl(urlTopojsonStates)
+
+    // Get it from a plain JS file if that suits your purpose
+    //
+    const countyGeojson = countyGeojsonRaw
+    const stateGeojson = stateGeojsonRaw
+    const stateTopojson = topojsonUsStates5m
+    debugger;
+     
     const projection = d3.geoAlbersUsa();
     const geoGenerator = d3.geoPath().projection(projection);
     // Get individual coordinate conversion to see if things line up
@@ -186,6 +198,7 @@ async function plotCsvData() {
     svg = appendUsCounties(svg, countyGeojson, stateMap, valueMap, geoGenerator)
     svg = appendUsStates(svg, statemesh, geoGenerator)
     reColor = colorByDate(covidData, stateMap)
+    addSelectOnChange()
     console.log('intial coloring done')
 
     // Yes, this works. The previous data binding (county data)
